@@ -49,7 +49,15 @@ export default function Home() {
         </div>
         <div className="hero-photo-wrap">
           <div className="photo-ring" aria-hidden="true" />
-          <img className="hero-photo" src="/IMG_4702.jpeg" alt="Oliver från OFORSAB framför arbetsbilen" />
+          <img
+            className="hero-photo"
+            src="/oliver-hero-v2.webp"
+            alt="Oliver Fors i en professionell betongmiljö"
+            width="1086"
+            height="1448"
+            fetchPriority="high"
+            decoding="async"
+          />
           <div className="photo-label"><span className="pulse" /> Oliver Fors <span>— grundare</span></div>
         </div>
         <div className="scroll-note" aria-hidden="true">Scrolla för mer <span>↓</span></div>
