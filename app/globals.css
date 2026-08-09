@@ -84,34 +84,17 @@ a {
   margin-left: 14px;
 }
 .up-right-arrow {
-  position: relative;
   display: inline-block;
-  width: 0.72em;
-  height: 0.72em;
   flex: 0 0 auto;
-  vertical-align: -0.02em;
+  font-family: Arial, Helvetica, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-variant-emoji: text;
+  line-height: 1;
+  vertical-align: -0.03em;
 }
 .up-right-arrow::before {
-  content: "";
-  position: absolute;
-  left: 0.04em;
-  bottom: 0.06em;
-  width: 0.86em;
-  height: 0.1em;
-  border-radius: 999px;
-  background: currentColor;
-  transform: rotate(-45deg);
-  transform-origin: left center;
-}
-.up-right-arrow::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 0.4em;
-  height: 0.4em;
-  border-top: 0.1em solid currentColor;
-  border-right: 0.1em solid currentColor;
+  content: "\2197\FE0E";
 }
 .hero {
   min-height: 790px;
