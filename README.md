@@ -59,7 +59,7 @@ Production releases are started manually from GitHub:
 The workflow:
 
 1. validates the repository and runs lint,
-2. builds the static website,
+2. builds and tests the static website,
 3. uploads `dist/client/` to Loopia using SSH and rsync,
 4. creates a version tag and a GitHub Release.
 

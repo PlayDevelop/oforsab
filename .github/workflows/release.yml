@@ -73,8 +73,8 @@ jobs:
           echo "tag=$release_tag" >> "$GITHUB_OUTPUT"
           echo "Next release: $release_tag"
 
-      - name: Build static website
-        run: npm run build
+      - name: Build and test static website
+        run: npm test
 
       - name: Create deployment metadata
         env:
