@@ -1,86 +1,88 @@
 # OFORSAB
 
-Webbplats för **Oliver Fors AB**, ett betongföretag i Borås med inriktning på
-mönstrad betong, betongarbeten och utemiljöer i Västra Götaland.
+Website for **Oliver Fors AB**, a concrete contractor based in Borås,
+specializing in patterned concrete, general concrete work, and outdoor surfaces
+throughout Västra Götaland.
 
-Webbplats: [oforsab.se](https://oforsab.se)
+Website: [oforsab.se](https://oforsab.se)
 
-## Teknik
+## Technology
 
-- React och TypeScript
-- Vinext och Vite
-- Responsiv design för mobil och desktop
-- Scrollbaserade animationer och parallaxeffekter
-- Statisk export för drift på Loopia
+- React and TypeScript
+- Vinext and Vite
+- Responsive design for mobile and desktop
+- Scroll-based animations and parallax effects
+- Static export for hosting at Loopia
 
-Sidan använder för närvarande ingen databas eller serverbaserad funktionalitet.
+The website currently has no database or server-side functionality.
 
-## Lokal utveckling
+## Local development
 
-Node.js `22.13.0` eller senare krävs.
+Node.js `22.13.0` or later is required.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Den lokala utvecklingsservern visar adressen i terminalen, normalt
+The development server prints its local address in the terminal, normally
 `http://localhost:3000`.
 
-## Kontroller
+## Validation
 
 ```bash
 npm run lint
 npm run build
 ```
 
-`npm run build` skapar en statisk produktionsversion i `dist/client/`.
+`npm run build` creates a static production build in `dist/client/`.
 
-## Projektstruktur
+## Project structure
 
-- `app/page.tsx` – sidans innehåll och strukturerade företagsdata
-- `app/globals.css` – design och responsiv layout
-- `app/ParallaxMotion.tsx` – scroll- och parallaxeffekter
-- `public/` – logotyper, bilder och webbserverinställningar
-- `.github/workflows/release.yml` – manuell produktionsrelease
-- `.github/scripts/` – validering, versionshantering och Loopia-deployment
+- `app/page.tsx` – page content and structured business data
+- `app/globals.css` – design and responsive layout
+- `app/ParallaxMotion.tsx` – scroll and parallax effects
+- `public/` – logos, images, and web server configuration
+- `.github/workflows/release.yml` – manual production release
+- `.github/scripts/` – validation, versioning, and Loopia deployment
 
-## Release till Loopia
+## Release to Loopia
 
-Produktionsreleaser startas manuellt från GitHub:
+Production releases are started manually from GitHub:
 
-1. Öppna **Actions** i repositoryt.
-2. Välj **Release and deploy**.
-3. Klicka på **Run workflow**.
-4. Välj `patch`, `minor` eller `major`.
-5. Starta workflowen från `main`.
+1. Open **Actions** in the repository.
+2. Select **Release and deploy**.
+3. Click **Run workflow**.
+4. Select `patch`, `minor`, or `major`.
+5. Start the workflow from `main`.
 
-Workflowen:
+The workflow:
 
-1. validerar repositoryt och kör lint,
-2. bygger den statiska webbplatsen,
-3. laddar upp `dist/client/` till Loopia via SSH och rsync,
-4. skapar en versionstagg och en GitHub Release.
+1. validates the repository and runs lint,
+2. builds the static website,
+3. uploads `dist/client/` to Loopia using SSH and rsync,
+4. creates a version tag and a GitHub Release.
 
-### GitHub-secrets
+### GitHub secrets
 
-Följande repository-secrets krävs:
+The following repository secrets are required:
 
 - `LOOPIA_SSH_USER`
 - `LOOPIA_SSH_PRIVATE_KEY`
 - `LOOPIA_SSH_KNOWN_HOSTS`
 
-De är redan konfigurerade för detta repository. Hemliga värden ska aldrig
-skrivas in i källkoden.
+They are already configured for this repository. Secret values must never be
+committed to source control.
 
-### Standardinställningar
+### Default configuration
 
-- SSH-server: `ssh.loopia.se`
-- SSH-port: `22`
-- Målkatalog: `oforsab.se/public_html`
+- SSH host: `ssh.loopia.se`
+- SSH port: `22`
+- Remote path: `oforsab.se/public_html`
 
-Värdena kan vid behov ersättas med GitHub-variablerna `LOOPIA_SSH_HOST`,
-`LOOPIA_SSH_PORT` och `LOOPIA_REMOTE_PATH`.
+The defaults can be overridden with the GitHub variables `LOOPIA_SSH_HOST`,
+`LOOPIA_SSH_PORT`, and `LOOPIA_REMOTE_PATH` when needed.
 
-Deployment-scriptet använder synkronisering med borttagning av gamla filer.
-Som säkerhetskontroll måste målkatalogen sluta med `public_html`.
+The deployment script synchronizes the production directory and removes files
+that no longer exist in the build. As a safety check, the remote path must end
+with `public_html`.
