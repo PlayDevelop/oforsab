@@ -12,7 +12,10 @@ export const metadata: Metadata = {
   title: "Oliver Fors AB | Mönstrad betong i Borås",
   description:
     "Oliver Fors AB utför mönstrad betong, betongarbeten och utemiljöer i Borås och Västra Götaland.",
-  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    shortcut: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
