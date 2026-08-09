@@ -1,0 +1,160 @@
+name: Release and deploy
+
+run-name: ${{ inputs.bump }} release to Loopia by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version increment
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+concurrency:
+  group: loopia-production
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Validate, build, deploy, and release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://oforsab.se
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      LOOPIA_SSH_HOST: ${{ vars.LOOPIA_SSH_HOST || 'ssh.loopia.se' }}
+      LOOPIA_SSH_USER: ${{ secrets.LOOPIA_SSH_USER }}
+      LOOPIA_SSH_PORT: ${{ vars.LOOPIA_SSH_PORT || '22' }}
+      LOOPIA_REMOTE_PATH: ${{ vars.LOOPIA_REMOTE_PATH || 'oforsab.se/public_html' }}
+
+    steps:
+      - name: Require main branch
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Releases must be started from the main branch."
+          exit 1
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate source files
+        run: bash .github/scripts/check-repository.sh
+
+      - name: Determine next version
+        id: version
+        run: |
+          release_tag="$(bash .github/scripts/next-version.sh '${{ inputs.bump }}')"
+          if git rev-parse "$release_tag" >/dev/null 2>&1; then
+            echo "::error::Tag $release_tag already exists."
+            exit 1
+          fi
+          echo "tag=$release_tag" >> "$GITHUB_OUTPUT"
+          echo "Next release: $release_tag"
+
+      - name: Build static website
+        run: npm run build
+
+      - name: Create deployment metadata
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          jq -n \
+            --arg version "$RELEASE_TAG" \
+            --arg commit "$GITHUB_SHA" \
+            --arg releasedAt "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+            '{version: $version, commit: $commit, releasedAt: $releasedAt}' \
+            > dist/client/release.json
+
+      - name: Validate static output
+        run: |
+          test -f dist/client/index.html
+          test -f dist/client/404.html
+          test -d dist/client/_next
+
+      - name: Validate deployment secrets
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.LOOPIA_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.LOOPIA_SSH_KNOWN_HOSTS }}
+        run: |
+          missing=0
+          for variable in LOOPIA_SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS; do
+            if [[ -z "${!variable:-}" ]]; then
+              echo "::error::$variable is not configured."
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.LOOPIA_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.LOOPIA_SSH_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
+
+      - name: Verify SSH connection and target
+        run: |
+          ssh \
+            -p "$LOOPIA_SSH_PORT" \
+            -o BatchMode=yes \
+            "$LOOPIA_SSH_USER@$LOOPIA_SSH_HOST" \
+            "test -d '$LOOPIA_REMOTE_PATH'"
+
+      - name: Deploy to Loopia
+        run: bash .github/scripts/deploy-loopia.sh
+
+      - name: Create Git tag
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag --annotate "$RELEASE_TAG" "$GITHUB_SHA" --message "Release $RELEASE_TAG"
+          git push origin "$RELEASE_TAG"
+
+      - name: Create GitHub Release
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            --verify-tag \
+            --target "$GITHUB_SHA" \
+            --title "OFORSAB $RELEASE_TAG" \
+            --generate-notes
+
+      - name: Add workflow summary
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          {
+            echo "## Deployed $RELEASE_TAG"
+            echo
+            echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- Environment: [oforsab.se](https://oforsab.se)"
+            echo "- Release: https://github.com/$GITHUB_REPOSITORY/releases/tag/$RELEASE_TAG"
+          } >> "$GITHUB_STEP_SUMMARY"

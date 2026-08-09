@@ -47,7 +47,9 @@ export default async function Home() {
   const requestHeaders = await headers();
   const userId = requestHeaders.get("oai-authenticated-user-id");
   const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
+  const encodedFullName = requestHeaders.get(
+    "oai-authenticated-user-full-name",
+  );
   const fullName =
     encodedFullName &&
     requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
@@ -93,6 +95,28 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 - `npm run build`: verify the vinext build output
 - `npm test`: build the starter and verify its rendered loading skeleton
 - `npm run db:generate`: generate Drizzle migrations after schema changes
+
+## Release to Loopia
+
+Production releases are started manually from GitHub Actions using the
+`Release and deploy` workflow. The workflow validates the repository, builds a
+static export, uploads `dist/client/` to Loopia with SSH and rsync, then creates
+a version tag and GitHub Release.
+
+Configure these GitHub environment secrets for `production`:
+
+- `LOOPIA_SSH_USER`: the SSH username created in Loopia Customer Zone
+- `LOOPIA_SSH_PRIVATE_KEY`: the private ED25519 key whose public key is added
+  to the Loopia SSH user
+- `LOOPIA_SSH_KNOWN_HOSTS`: a verified known-hosts entry for `ssh.loopia.se`
+
+Optional GitHub environment variables:
+
+- `LOOPIA_SSH_HOST` defaults to `ssh.loopia.se`
+- `LOOPIA_SSH_PORT` defaults to `22`
+- `LOOPIA_REMOTE_PATH` defaults to `oforsab.se/public_html`
+
+Run the workflow from the `main` branch and choose `patch`, `minor`, or `major`.
 
 ## Learn More
 
