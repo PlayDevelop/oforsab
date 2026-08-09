@@ -86,7 +86,7 @@ export default function Home() {
           <a href="#tjanster">Tjänster</a>
           <a href="#om">Om OFORSAB</a>
           <a className="nav-cta" href="#kontakt">
-            Prata projekt <span>↗</span>
+            Prata projekt <span className="up-right-arrow" aria-hidden="true" />
           </a>
         </div>
       </nav>
@@ -109,7 +109,8 @@ export default function Home() {
           </p>
           <div className="hero-actions">
             <a className="button button-coral" href="#kontakt">
-              Berätta om ditt projekt <span>↗</span>
+              Berätta om ditt projekt
+              <span className="up-right-arrow" aria-hidden="true" />
             </a>
             <a className="text-link" href="#tjanster">
               Se vad vi gör <span>↓</span>
@@ -162,7 +163,8 @@ export default function Home() {
               genomtänkt.
             </p>
             <a className="arrow-link" href="#kontakt">
-              Lär känna OFORSAB <span>↗</span>
+              Lär känna OFORSAB
+              <span className="up-right-arrow" aria-hidden="true" />
             </a>
           </div>
         </div>
@@ -189,7 +191,10 @@ export default function Home() {
                   <h3>{service.title}</h3>
                 </div>
                 <p>{service.text}</p>
-                <span className="service-arrow">↗</span>
+                <span
+                  className="service-arrow up-right-arrow"
+                  aria-hidden="true"
+                />
               </article>
             ))}
           </div>
@@ -228,7 +233,8 @@ export default function Home() {
             steg.
           </p>
           <a className="button button-dark" href="mailto:oliver@oforsab.se">
-            oliver@oforsab.se <span>↗</span>
+            oliver@oforsab.se
+            <span className="up-right-arrow" aria-hidden="true" />
           </a>
         </div>
       </section>

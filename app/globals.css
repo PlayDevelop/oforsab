@@ -83,6 +83,36 @@ a {
   font-size: 18px;
   margin-left: 14px;
 }
+.up-right-arrow {
+  position: relative;
+  display: inline-block;
+  width: 0.72em;
+  height: 0.72em;
+  flex: 0 0 auto;
+  vertical-align: -0.02em;
+}
+.up-right-arrow::before {
+  content: "";
+  position: absolute;
+  left: 0.04em;
+  bottom: 0.06em;
+  width: 0.86em;
+  height: 0.1em;
+  border-radius: 999px;
+  background: currentColor;
+  transform: rotate(-45deg);
+  transform-origin: left center;
+}
+.up-right-arrow::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0.4em;
+  height: 0.4em;
+  border-top: 0.1em solid currentColor;
+  border-right: 0.1em solid currentColor;
+}
 .hero {
   min-height: 790px;
   position: relative;
@@ -363,6 +393,7 @@ a {
   font-size: 27px;
   color: var(--coral);
   text-align: right;
+  justify-self: end;
 }
 .statement {
   height: 585px;
