@@ -1,124 +1,86 @@
-# vinext-starter
+# OFORSAB
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Webbplats för **Oliver Fors AB**, ett betongföretag i Borås med inriktning på
+mönstrad betong, betongarbeten och utemiljöer i Västra Götaland.
 
-## Prerequisites
+Webbplats: [oforsab.se](https://oforsab.se)
 
-- Node.js `>=22.13.0`
+## Teknik
 
-## Quick Start
+- React och TypeScript
+- Vinext och Vite
+- Responsiv design för mobil och desktop
+- Scrollbaserade animationer och parallaxeffekter
+- Statisk export för drift på Loopia
+
+Sidan använder för närvarande ingen databas eller serverbaserad funktionalitet.
+
+## Lokal utveckling
+
+Node.js `22.13.0` eller senare krävs.
 
 ```bash
 npm install
 npm run dev
+```
+
+Den lokala utvecklingsservern visar adressen i terminalen, normalt
+`http://localhost:3000`.
+
+## Kontroller
+
+```bash
+npm run lint
 npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+`npm run build` skapar en statisk produktionsversion i `dist/client/`.
 
-## Included Shape
+## Projektstruktur
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+- `app/page.tsx` – sidans innehåll och strukturerade företagsdata
+- `app/globals.css` – design och responsiv layout
+- `app/ParallaxMotion.tsx` – scroll- och parallaxeffekter
+- `public/` – logotyper, bilder och webbserverinställningar
+- `.github/workflows/release.yml` – manuell produktionsrelease
+- `.github/scripts/` – validering, versionshantering och Loopia-deployment
 
-## Workspace Auth Headers
+## Release till Loopia
 
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
+Produktionsreleaser startas manuellt från GitHub:
 
-The user ID is stable for the same user on the same Site and different across Sites. Email and name are intended for display or contact purposes.
+1. Öppna **Actions** i repositoryt.
+2. Välj **Release and deploy**.
+3. Klicka på **Run workflow**.
+4. Välj `patch`, `minor` eller `major`.
+5. Starta workflowen från `main`.
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+Workflowen:
 
-Treat the full name as optional and fall back to email when it is absent:
+1. validerar repositoryt och kör lint,
+2. bygger den statiska webbplatsen,
+3. laddar upp `dist/client/` till Loopia via SSH och rsync,
+4. skapar en versionstagg och en GitHub Release.
 
-```tsx
-import { headers } from "next/headers";
+### GitHub-secrets
 
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get(
-    "oai-authenticated-user-full-name",
-  );
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
+Följande repository-secrets krävs:
 
-  const displayName = fullName ?? email;
-  // ...
-}
-```
+- `LOOPIA_SSH_USER`
+- `LOOPIA_SSH_PRIVATE_KEY`
+- `LOOPIA_SSH_KNOWN_HOSTS`
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+De är redan konfigurerade för detta repository. Hemliga värden ska aldrig
+skrivas in i källkoden.
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+### Standardinställningar
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+- SSH-server: `ssh.loopia.se`
+- SSH-port: `22`
+- Målkatalog: `oforsab.se/public_html`
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+Värdena kan vid behov ersättas med GitHub-variablerna `LOOPIA_SSH_HOST`,
+`LOOPIA_SSH_PORT` och `LOOPIA_REMOTE_PATH`.
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Release to Loopia
-
-Production releases are started manually from GitHub Actions using the
-`Release and deploy` workflow. The workflow validates the repository, builds a
-static export, uploads `dist/client/` to Loopia with SSH and rsync, then creates
-a version tag and GitHub Release.
-
-Configure these GitHub environment secrets for `production`:
-
-- `LOOPIA_SSH_USER`: the SSH username created in Loopia Customer Zone
-- `LOOPIA_SSH_PRIVATE_KEY`: the private ED25519 key whose public key is added
-  to the Loopia SSH user
-- `LOOPIA_SSH_KNOWN_HOSTS`: a verified known-hosts entry for `ssh.loopia.se`
-
-Optional GitHub environment variables:
-
-- `LOOPIA_SSH_HOST` defaults to `ssh.loopia.se`
-- `LOOPIA_SSH_PORT` defaults to `22`
-- `LOOPIA_REMOTE_PATH` defaults to `oforsab.se/public_html`
-
-Run the workflow from the `main` branch and choose `patch`, `minor`, or `major`.
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+Deployment-scriptet använder synkronisering med borttagning av gamla filer.
+Som säkerhetskontroll måste målkatalogen sluta med `public_html`.
